@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hey!</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        .float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body class="bg-slate-900 h-screen w-screen flex flex-col items-center justify-center overflow-hidden p-4">
+
+    <div class="flex flex-col items-center justify-center max-w-md w-full text-center">
+        <!-- Balon Teks -->
+        <div class="relative bg-white p-6 rounded-2xl shadow-xl border-4 border-slate-700 w-full max-h-48 overflow-y-auto mb-6">
+            <p id="bubble-text" class="text-lg font-bold text-gray-800 min-h-[50px] break-words"></p>
+        </div>
+
+        <!-- Karakter GIF -->
+        <img id="charaImage" src="chara1.gif" class="w-64 cursor-pointer float transition-all duration-500" onclick="handleCharaClick()" alt="Chara GIF">
+
+        <!-- Tombol -->
+        <button id="btn-action" class="hidden mt-6 animate-bounce" onclick="handleButtonClick()">
+            <img src="button.png" class="w-32" alt="Button">
+        </button>
+    </div>
+
+    <script>
+        const bubble = document.getElementById("bubble-text");
+        const charaImg = document.getElementById("charaImage");
+        const btn = document.getElementById("btn-action");
+        
+        const dialogues = [
+            { text: "wle dasar Kunti bogel", img: "chara1.gif" },
+            { text: "hey, iya jangan marah dulu", img: "chara2.gif" },
+            { text: "coba klik ini", img: "chara3.gif" }
+        ];
+        
+        let currentStep = 0;
+        let isFinal = false;       // Menandakan teks awal selesai & tombol muncul
+        let isSpammedOnce = false; // Menandakan tombol sudah diklik pertama kali
+        let isTyping = false;      // Menandakan text sedang berjalan mengetik
+
+        function typeText(text, speed, callback) {
+            isTyping = true;
+            bubble.innerHTML = "";
+            let i = 0;
+            const interval = setInterval(() => {
+                bubble.innerHTML += text.charAt(i);
+                bubble.parentElement.scrollTop = bubble.parentElement.scrollHeight;
+                i++;
+                if (i >= text.length) {
+                    clearInterval(interval);
+                    isTyping = false;
+                    if (callback) setTimeout(callback, 1500);
+                }
+            }, speed);
+        }
+
+        // Jalankan percakapan pembuka
+        function playSequence() {
+            if (currentStep < dialogues.length) {
+                charaImg.src = dialogues[currentStep].img;
+                typeText(dialogues[currentStep].text, 100, () => {
+                    currentStep++;
+                    playSequence();
+                });
+            } else {
+                btn.classList.remove("hidden");
+                isFinal = true;
+            }
+        }
+
+        // Aksi ketika karakter GIF di-klik
+        function handleCharaClick() {
+            if (isTyping) return; // Mencegah klik double saat teks sedang mengetik
+
+            if (isFinal && !isSpammedOnce) {
+                // Jika tombol muncul tapi belum diklik
+                bubble.innerHTML = "iya iya tapi klik tombol ini ya";
+            } else if (isSpammedOnce) {
+                // Jika sudah fase spam cantik, klik Chara akan mengulangi teks lalu auto-refresh
+                const kataCantik = "cantik ".repeat(50);
+                typeText("haha iya iya kamu " + kataCantik, 20, () => {
+                    // Setelah ketikan kedua selesai, halaman otomatis reload/kembali ke awal
+                    window.location.reload();
+                });
+            }
+        }
+
+        // Aksi ketika Tombol di-klik pertama kali
+        function handleButtonClick() {
+            if (isTyping) return;
+            
+            isSpammedOnce = true;
+            btn.classList.add("hidden"); // Sembunyikan tombol
+            charaImg.src = "chara4.gif"; // Ganti ke pose ke-4
+            
+            const kataCantik = "cantik ".repeat(50);
+            typeText("haha iya iya kamu " + kataCantik, 20);
+        }
+
+        window.onload = playSequence;
+    </script>
+</body>
+</html>
